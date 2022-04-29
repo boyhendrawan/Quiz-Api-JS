@@ -1,26 +1,25 @@
 async function requestApi() {
-  return fetch("https://opentdb.com/api.php?amount=10&type=multiple")
+  const testing = await fetch("https://opentdb.com/api.php?amount=10&type=multiple")
     .then((e) => {
-      // console.log(e);
       if (e.ok) {
-        // console.log("1");
         return e.json();
       }
-      throw new Error("true");
+      throw new Error("There are something worng with data Api");
     })
     .then((e) => {
-      //   console.log(e.results);
       if (e.response_code != 0) {
-        alert("Error : woy");
+        throw new Error("Question is not available");
       }
       return e.results;
     });
+  return testing;
 }
-async function sa() {
-  try {
-    const data = await requestApi();
+
+requestApi()
+  .then((data) => {
+    // to catch if request have been into data
+
     let count = 0;
-    console.log(data);
     let gradeOfUser = [];
     allData(data, count, gradeOfUser);
 
@@ -32,21 +31,51 @@ async function sa() {
       this.setAttribute("type", "hidden");
       allData(data, count, gradeOfUser);
     });
-  } catch (e) {
-    console.log(e);
-  }
-}
+  })
+  // handle if request sent error
+  .catch((e) => console.error(e));
 
 function allData(data, count, gradeOfUser) {
-  const question = document.getElementsByClassName("question")[0];
-  const number = question.getElementsByClassName("question-header")[0];
-  const text_q = question.getElementsByClassName("question-text")[0];
+  const question1 = document.getElementsByClassName("question")[0];
+  const number = question1.getElementsByClassName("question-header")[0];
+  const text_q = question1.getElementsByClassName("question-text")[0];
   number.innerHTML = `QUESTION ${count + 1}/${data.length}`;
   text_q.innerHTML = `${data[count].question}`;
   //save answers  as array
   let datas = data[count].incorrect_answers;
   datas.push(data[count].correct_answer);
-  // const randomNumber = ;
+
+  //randomMultiChoice
+  randomAnswer(datas);
+
+  //user choice
+  const ans = document.getElementsByClassName("answers")[0];
+  //calculate
+  const calEachAnswer = Math.round(100 / data.length);
+  // temporary var
+  let tmp_answered = false;
+
+  ans.addEventListener("click", function (e) {
+    if (e.target.className == "hide" && tmp_answered == false) {
+      tmp_answered = true;
+      const answerUser = e.target.nextElementSibling.innerHTML;
+      if (answerUser == data[count].correct_answer) {
+        e.target.parentElement.classList.add("activeT");
+        gradeOfUser.push(calEachAnswer);
+        e.target.previousElementSibling.style.backgroundColor = "green";
+      } else {
+        gradeOfUser.push(0);
+        e.target.previousElementSibling.style.backgroundColor = "red";
+        e.target.parentElement.classList.add("active");
+      }
+
+      //check alreadt finish Or not
+      btnNextOrFinish(count, data, gradeOfUser);
+    }
+  });
+}
+
+function randomAnswer(datas) {
   let tmpAr = [];
   while (tmpAr.length != datas.length) {
     let random = Math.round(Math.random() * 3);
@@ -75,69 +104,39 @@ function allData(data, count, gradeOfUser) {
     makeSpan.innerHTML = `${(i + 10).toString(36)}`;
     ans.appendChild(makeLi);
   }
-
-  //make the turth
-  const ans = document.getElementsByClassName("answers")[0];
-  //save search btn to search
+}
+function btnNextOrFinish(count, data, gradeOfUser) {
   const containerBtn = document.getElementById("button");
   const btnNext = containerBtn.querySelector(".btnNext");
-  //calculate
+  if (count != data.length - 1) {
+    btnNext.setAttribute("type", "button");
+  } else {
+    const grade = gradeOfUser.reduce((acc, arr) => (acc += arr));
+    const testingGrade = document.createElement("p");
+    const headerGrade = document.createElement("h3");
+    const btnGrade = document.createElement("input");
+    const conGrade = document.createElement("div");
+    testingGrade.innerHTML = `Your Grade is  <b>${grade} </b>`;
+    conGrade.appendChild(headerGrade);
+    conGrade.appendChild(testingGrade);
+    conGrade.appendChild(btnGrade);
 
-  const calEachAnswer = Math.round(100 / data.length);
+    headerGrade.innerText = "Result Of Quiz";
 
-  // temporary var
-  let tmp_answered = false;
-  let tmp_data = 0;
+    // added classes
+    conGrade.classList.add("question");
+    headerGrade.classList.add("question-header");
+    testingGrade.classList.add("question-text");
+    btnGrade.setAttribute("value", "START AGAIN");
+    btnGrade.setAttribute("type", "button");
+    const container = document.getElementsByClassName("container")[0];
+    container.innerHTML = "";
+    container.append(conGrade);
+    conGrade.classList.add("questionAddon");
 
-  ans.addEventListener("click", function (e) {
-    if (e.target.className == "hide" && tmp_answered == false) {
-      tmp_answered = true;
-      const answerUser = e.target.nextElementSibling.innerHTML;
-      if (answerUser == data[count].correct_answer) {
-        e.target.parentElement.classList.add("activeT");
-        gradeOfUser.push(calEachAnswer);
-        e.target.previousElementSibling.style.backgroundColor = "green";
-      } else {
-        gradeOfUser.push(0);
-        e.target.previousElementSibling.style.backgroundColor = "red";
-        e.target.parentElement.classList.add("active");
-      }
-
-      if (count != data.length - 1) {
-        console.log(count, data.length);
-        btnNext.setAttribute("type", "button");
-      } else {
-        const grade = gradeOfUser.reduce((acc, arr) => (acc += arr));
-        const testingGrade = document.createElement("p");
-        const headerGrade = document.createElement("h3");
-        const btnGrade = document.createElement("input");
-        const conGrade = document.createElement("div");
-        testingGrade.innerHTML = `Your Grade is  <b>${grade} </b>`;
-        conGrade.appendChild(headerGrade);
-        conGrade.appendChild(testingGrade);
-        conGrade.appendChild(btnGrade);
-
-        headerGrade.innerText = "Result Of Quiz";
-
-        // added classes
-        conGrade.classList.add("question");
-        headerGrade.classList.add("question-header");
-        testingGrade.classList.add("question-text");
-        btnGrade.setAttribute("value", "START AGAIN");
-        btnGrade.setAttribute("type", "button");
-        const container = document.getElementsByClassName("container")[0];
-        container.innerHTML = "";
-        container.append(conGrade);
-        container.classList.add("containerAddon");
-        conGrade.classList.add("questionAddon");
-
-        const refreshPage = document.getElementsByClassName("questionAddon")[0].querySelector("input");
-        refreshPage.addEventListener("click", function (e) {
-          location.reload();
-        });
-      }
-    }
-  });
+    const refreshPage = document.getElementsByClassName("questionAddon")[0].querySelector("input");
+    refreshPage.addEventListener("click", function (e) {
+      location.reload();
+    });
+  }
 }
-// function(tag,)
-sa();

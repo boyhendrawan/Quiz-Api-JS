@@ -13,16 +13,11 @@ body {
   /* height: 10000px; */
   display: grid;
   margin: 20px auto;
-  /* height: 620px; */
   row-gap: 50px;
-  /* justify-content: center; */
   align-content: center;
   grid-template-columns: repeat(1, minmax(300px, 1fr));
-  /* grid-template-rows: repeat(3, 100px); */
 }
-.containerAddon {
-  height: 620px;
-}
+
 .question {
   /* background-color: grey; */
   border: 2px solid blueviolet;
@@ -42,11 +37,12 @@ body {
   background-color: blueviolet;
   color: white;
   padding: 10px;
+  border-radius: 10px;
 }
 .question input {
   color: blueviolet;
   background-color: rgb(255, 255, 255);
-  border-radius: 30px;
+  border-radius: 20px;
   width: 20%;
   height: 50px;
   text-transform: uppercase;
